@@ -23,6 +23,6 @@ class Parser:
 
 
 if __name__ == '__main__':
-    URL = 'https://docs.oracle.com/javase/tutorial/collections/interfaces/index.html'
+    URL = 'https://docs.oracle.com/'
     p = Parser()
     print(p.pars_site(URL))
