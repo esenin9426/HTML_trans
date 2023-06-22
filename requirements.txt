@@ -1,3 +1,4 @@
 beautifulsoup4 = 4.10.0
 requests = 2.27.1
 translate = 3.6.1
+aiogram

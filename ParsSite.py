@@ -1,3 +1,6 @@
+from pprint import pprint
+
+
 class Parser:
     def __init__(self):
         import requests
@@ -10,19 +13,18 @@ class Parser:
         soup = self.bs(r.text, 'html.parser')
 
         html_soup = soup.find_all('div')
-
         self.html_str = ''
 
         for i in html_soup:
             self.html_str += i.text
-        self.html_str = ''.join([i.lower() for i in self.html_str if i.isalpha() or i == ' ']).split(' ')
+        self.html_str = ''.join((i.lower() for i in self.html_str if i.isalpha() or i == ' ')).split(' ')
         self.html_str = list(set(self.html_str))
         self.html_str.remove('')
 
-        return self.html_str
+        return list(self.html_str)
 
 
 if __name__ == '__main__':
-    URL = 'https://docs.oracle.com/'
+    URL = 'https://www.oracle.com/java/technologies/javase-subscription-overview.html'
     p = Parser()
-    print(p.pars_site(URL))
+    pprint(p.pars_site(URL))

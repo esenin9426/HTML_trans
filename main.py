@@ -1,12 +1,17 @@
-from pars_site import Parser
+from ParsSite import Parser
 from translate import Translator
+import TelegramBot
 
 if __name__ == '__main__':
-    URL = 'https://docs.oracle.com/javase/tutorial/collections/interfaces/index.html'
-    t = Pars_site(URL)
-    t2 = Parser()
-    t2 = t2.pars_site(URL)
+    URL = 'https://www.oracle.com/java/technologies/javase-subscription-overview.html'
+    t1 = Parser()
+    t1 = t1.pars_site(URL)
     translator = Translator()
+    dictionary = {}
+    for i in t1[:10]:
+        dictionary[i] = translator.translate(i)
 
-    for i in t2[:10]:
-        print(i + ' : ' + translator.translate(i))
+
+    print(dictionary)
+
+    TelegramBot.main()
