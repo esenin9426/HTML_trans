@@ -1,8 +1,8 @@
 import os
 import logging
 from CreateQuestions import question as q, log_question
-
 from SaveChatID import set_chat_id
+import psycopg2
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
@@ -10,9 +10,30 @@ from dotenv import load_dotenv
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+conn = psycopg2.connect(
+    host="0.0.0.0",
+    port="5432",
+    database="postgres",
+    user="postgres",
+    password="root")
+# Создание курсора для работы с базой данных
+cur = conn.cursor()
+
+
 storage = MemoryStorage()
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+async def get_user_info(message: types.Message):
+    chat = await message.get_chat()
+    user_id = chat.id
+    print()
+    user_first_name = chat.first_name
+    user_last_name = chat.last_name
+    user_username = chat.username
+    print([user_id, user_first_name, user_last_name, user_username])
+    return [user_id, user_first_name, user_last_name, user_username]
+
 
 def markup(answers):
     # Создание кнопок
@@ -29,8 +50,9 @@ def markup(answers):
     button5 = KeyboardButton('/start')
     button6 = KeyboardButton('/question')
     button7 = KeyboardButton('/data')
+    button8 = KeyboardButton('/help')
 
-    markup.row(button6, button7, button5)
+    markup.row(button6, button7, button5, button8)
     return markup
 
 # Создание клавиатуры с кнопками
@@ -50,15 +72,16 @@ dp = Dispatcher(bot, storage=storage)
 # Обработчик команды /start
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
+    set_chat_id(message, conn=conn, cur=cur)
     await message.reply("Привет! Я бот, который может задавать тебе вопросы.")
     await bot.send_message(message.chat.id, "Выберите действия" ,reply_markup=markup(False))
-    set_chat_id(message.chat.id)
     await message.delete()
 
 
 # Обработчик команды /question
 @dp.message_handler(commands=['question'])
 async def process_question_command(message: types.Message):
+    set_chat_id(message, conn=conn, cur=cur)
     # Выбираем случайный вопрос из списка
     question = q()
     log_question(question)
@@ -72,6 +95,7 @@ async def process_question_command(message: types.Message):
 # Обработчик ответа на вопрос
 @dp.message_handler(state='waiting_for_answer')
 async def process_answer(message: types.Message, state: FSMContext):
+    set_chat_id(message, conn=conn, cur=cur)
     # Получаем контекст пользователя
     data = await state.get_data()
     question = data['question']
@@ -85,7 +109,12 @@ async def process_answer(message: types.Message, state: FSMContext):
 
 
 def main():
-    executor.start_polling(dp, skip_updates=True)
+    try:
+        executor.start_polling(dp, skip_updates=True)
+    finally:
+        cur.close()
+        conn.close()
+        os.system('docker stop ps_db')
 # Запускаем бота
 if __name__ == '__main__':
     main()
