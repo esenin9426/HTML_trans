@@ -1,5 +1,7 @@
 import os
 import logging
+
+import ParsSite
 from CreateQuestions import question as q, log_question
 from SaveChatID import set_chat_id
 import psycopg2
@@ -10,8 +12,9 @@ from dotenv import load_dotenv
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+from ParsSite import Parser
 conn = psycopg2.connect(
-    host="0.0.0.0",
+    host="localhost",
     port="5432",
     database="postgres",
     user="postgres",
@@ -23,17 +26,6 @@ cur = conn.cursor()
 storage = MemoryStorage()
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
-async def get_user_info(message: types.Message):
-    chat = await message.get_chat()
-    user_id = chat.id
-    print()
-    user_first_name = chat.first_name
-    user_last_name = chat.last_name
-    user_username = chat.username
-    print([user_id, user_first_name, user_last_name, user_username])
-    return [user_id, user_first_name, user_last_name, user_username]
-
 
 def markup(answers):
     # Создание кнопок
@@ -107,6 +99,21 @@ async def process_answer(message: types.Message, state: FSMContext):
     # Сбрасываем состояние пользователя
     await state.finish()
 
+@dp.message_handler(commands=['data'])
+async def send_welcome(message: types.Message):
+    set_chat_id(message, conn=conn, cur=cur)
+    await message.reply("Давайте загрузим текст, который нужно перевести(на данный момент я могу принимать только URL сайта, но скоро я стану лучше:))")
+    await dp.current_state(chat=message.chat.id, user=message.from_user.id).set_state('waiting_data')
+
+    await message.delete()
+
+@dp.message_handler(state='waiting_data')
+async def process_download(message: types.Message, state: FSMContext):
+    p = Parser()
+    set_chat_id(message, conn=conn, cur=cur)
+    data = message.text
+    print(p.pars_site(URL=data))
+    await state.finish()
 
 def main():
     try:
@@ -114,7 +121,7 @@ def main():
     finally:
         cur.close()
         conn.close()
-        os.system('docker stop ps_db')
+        #os.system('docker stop ps_db')
 # Запускаем бота
 if __name__ == '__main__':
     main()
