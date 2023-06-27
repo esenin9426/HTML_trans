@@ -1,4 +1,3 @@
-from time import sleep
 
 from ParsSite import Parser
 from translate import Translator
@@ -13,8 +12,8 @@ if __name__ == '__main__':
         t1 = t1.pars_site(URL)
         translator = Translator()
         dictionary = {}
-        for i in t1[:10]:
-            dictionary[i] = translator.translate(i)
+        for i in t1:
+                dictionary[i] = translator.translate(i)
         print(dictionary)
 
         TelegramBot.main()

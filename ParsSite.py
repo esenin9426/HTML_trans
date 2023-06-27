@@ -9,20 +9,22 @@ class Parser:
         self.bs = bs
 
     def pars_site(self, URL):
-        r = self.requests.get(URL)
-        soup = self.bs(r.text, 'html.parser')
+        response = self.requests.get(URL)
+        print('start')
+        soup = self.bs(response.content, "html.parser")
+        print(2)
+        words = []
+        for text in soup.stripped_strings:
+            for word in text.split():
+                if word.isalpha() and word.isascii():
+                    words.append(word)
+        print(3)
+        english_words = set()
+        for word in words:
+            if word.encode('ascii', 'ignore').decode('ascii') == word:
+                english_words.add(word.lower())
 
-        html_soup = soup.find_all('div')
-        self.html_str = ''
-
-        for i in html_soup:
-            self.html_str += i.text
-        self.html_str = ''.join((i.lower() for i in self.html_str if i.isalpha() or i == ' ')).split(' ')
-        self.html_str = list(set(self.html_str))
-        self.html_str.remove('')
-
-        return list(self.html_str)
-
+        return english_words
 
 if __name__ == '__main__':
     URL = 'https://www.oracle.com/java/technologies/javase-subscription-overview.html'

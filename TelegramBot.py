@@ -13,6 +13,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from ParsSite import Parser
+from translate import Translator
 conn = psycopg2.connect(
     host="localhost",
     port="5432",
@@ -108,11 +109,14 @@ async def send_welcome(message: types.Message):
     await message.delete()
 
 @dp.message_handler(state='waiting_data')
+@catch(NotValidPayload)
 async def process_download(message: types.Message, state: FSMContext):
     p = Parser()
+    t = Translator()
     set_chat_id(message, conn=conn, cur=cur)
     data = message.text
-    print(p.pars_site(URL=data))
+    print(t.translate(p.pars_site(URL=data)))
+
     await state.finish()
 
 def main():
