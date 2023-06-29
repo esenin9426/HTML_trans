@@ -109,13 +109,14 @@ async def send_welcome(message: types.Message):
     await message.delete()
 
 @dp.message_handler(state='waiting_data')
-@catch(NotValidPayload)
 async def process_download(message: types.Message, state: FSMContext):
     p = Parser()
     t = Translator()
     set_chat_id(message, conn=conn, cur=cur)
     data = message.text
-    print(t.translate(p.pars_site(URL=data)))
+    pars_data = p.pars_site(URL=data)
+    for i in pars_data:
+        print({i:t.translate(i)})
 
     await state.finish()
 
