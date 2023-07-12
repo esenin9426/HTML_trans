@@ -2,14 +2,14 @@ from confluent_kafka import Producer
 
 # Create a Producer configuration
 conf = {
-    'bootstrap.servers': 'localhost:9092,localhost:9093,localhost:9094'
+    'bootstrap.servers': 'localhost:9092'
 }
 
 # Create a Producer object
 producer = Producer(conf)
 
 # Send messages to Kafka
-for i in range(10):
+for i in range(100):
     message = f"Message {i}"
     producer.produce('topic_name', value=message)
     producer.flush()

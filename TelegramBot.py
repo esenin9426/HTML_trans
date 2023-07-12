@@ -3,7 +3,7 @@ import logging
 
 import ParsSite
 from CreateQuestions import question as q, log_question
-from SaveChatID import set_chat_id
+from SaveChatID import set_chat_id, set_url
 import psycopg2
 
 from aiogram import Bot, Dispatcher, types
@@ -112,9 +112,10 @@ async def send_welcome(message: types.Message):
 async def process_download(message: types.Message, state: FSMContext):
     p = Parser()
     t = Translator()
-    set_chat_id(message, conn=conn, cur=cur)
-    data = message.text
-    p.pars_site(URL=data)
+    set_url(message, conn=conn, cur=cur)
+    """data = message.text
+    for i in p.pars_site(URL=data):
+        print(t.translate(i))"""
 
     await state.finish()
 

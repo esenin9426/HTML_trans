@@ -17,10 +17,16 @@ class Parser:
         for word in words:
             if word.encode('ascii', 'ignore').decode('ascii') == word:
                 english_words.add(word.lower())
-        print(len(english_words))
 
         return list(english_words)[:2]
 
-if __name__ == '__main__':
-    URL = 'https://www.oracle.com/java/technologies/javase-subscription-overview.html'
-    p = Parser()
+    def parsing(self, conn, cur):
+        query = "select user_id, url public.user_url where parsed = false LIMIT 1"
+
+        cur.execute(query)
+
+        # Получение результатов запроса
+        row = cur.fetchone()
+        print(row)
+
+
