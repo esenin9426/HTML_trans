@@ -3,4 +3,4 @@ requests
 translate
 aiogram
 psycopg2
-confluent-kafka
+confluent_kafka

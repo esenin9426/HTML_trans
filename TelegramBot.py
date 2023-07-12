@@ -114,9 +114,7 @@ async def process_download(message: types.Message, state: FSMContext):
     t = Translator()
     set_chat_id(message, conn=conn, cur=cur)
     data = message.text
-    pars_data = p.pars_site(URL=data)
-    for i in pars_data:
-        print({i:t.translate(i)})
+    p.pars_site(URL=data)
 
     await state.finish()
 
