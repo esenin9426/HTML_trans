@@ -13,7 +13,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from ParsSite import Parser
-from translate import Translator
+from Translate import Translator
 conn = psycopg2.connect(
     host="localhost",
     port="5432",

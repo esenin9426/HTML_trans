@@ -1,5 +1,5 @@
 from ParsSite import Parser
-from translate import Translator
+from Translate import Translator
 import TelegramBot
 import os
 
