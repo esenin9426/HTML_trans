@@ -8,7 +8,7 @@ class Parser:
         self.bs = bs
 
         self.conn = psycopg2.connect(
-            host="0.0.0.0",
+            host="localhost",
             port="5432",
             database="postgres",
             user="parser_user",

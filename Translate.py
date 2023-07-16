@@ -6,7 +6,7 @@ class Translator:
         from deep_translator import GoogleTranslator
         self.GoogleTranslator = GoogleTranslator
         self.conn = psycopg2.connect(
-            host="0.0.0.0",
+            host="localhost",
             port="5432",
             database="postgres",
             user="translator",

@@ -111,7 +111,7 @@ async def send_welcome(message: types.Message):
 @dp.message_handler(state='waiting_data')
 async def process_download(message: types.Message, state: FSMContext):
     p = Parser()
-    t = Translator()
+#    t = Translator()
     set_url(message, conn=conn, cur=cur)
     """data = message.text
     for i in p.pars_site(URL=data):
