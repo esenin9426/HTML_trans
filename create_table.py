@@ -25,4 +25,13 @@ CREATE table if not exists words_trsl (
     word VARCHAR(100),
     trsl VARCHAR(100)
 );
+
+CREATE ROLE parser_user LOGIN PASSWORD 'parser_user';
+CREATE ROLE translator LOGIN PASSWORD 'translator';
+
+GRANT ALL on public.user_url TO parser_user
+GRANT ALL on public.url_words TO parser_user
+GRANT select  on public.url_words TO translator
+GRANT ALL on public.words_trsl TO translator
+
 """
