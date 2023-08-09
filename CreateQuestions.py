@@ -1,25 +1,67 @@
 import random
+from aiogram import types
+import psycopg2
 
-def question():
-    questions = [
-        {
-            "question": "Какой язык программирования используется для разработки приложений на Android?",
-            "options": ["Java", "Python", "C++", "JavaScript"],
-            "answer": "Java"
-        },
-        {
-            "question": "Какая операционная система является наиболее распространенной в мире?",
-            "options": ["Windows", "Linux", "macOS", "Android"],
-            "answer": "Windows"
-        },
-        {
-            "question": "Какой язык программирования используется для создания веб-сайтов?",
-            "options": ["F", "d", "HTML/CSS", "P"],
-            "answer": "HTML/CSS"
-        }
-    ]
+class Interviewer:
+    def __init__(self):
+        conn = psycopg2.connect(
+            host="0.0.0.0",
+            port="5432",
+            database="postgres",
+            user="parser_user",
+            password="parser_user")
 
-    return random.choice(questions)
+        # Создание курсора для работы с базой данных
+        self.cur = conn.cursor()
+        self.users_words = {}
 
-def log_question(question: dict):
-    print(question)
+
+
+    def question(self, message: types.Message):
+        id_user = message.chat.id
+        sql = f"""SELECT distinct uw.user_id, uw.word, wt.trsl 
+                FROM public.url_words uw 
+        		    inner join public.words_trsl wt on uw.word = wt.word
+        		    where uw.user_id = {id_user}
+        		    order by uw.word desc
+        		    """
+
+        self.cur.execute(sql)
+
+        row = self.cur.fetchall()
+        for i in row:
+            i = list(i)
+            self.users_words[i[0]] = self.users_words.get(i[0], []) + [[i[1], i[2]]]
+
+        l = len(self.users_words[id_user])
+        p = random.randint(0, l)
+
+        min = p - 5
+        max = p + 5
+        if min < 0:
+            min = 0
+            max = min + 11
+        if max > len(self.users_words[id_user]):
+            max = len(self.users_words[id_user])
+            min = max - 11
+
+        words = []
+        for i in range(min, p):
+            words.append(self.users_words[id_user][i][1])
+        for i in range(p + 1, max):
+            words.append(self.users_words[id_user][i][1])
+        r = words
+        random.shuffle(r)
+        v = r[:3] + [self.users_words[id_user][p][1]]
+        random.shuffle(v)
+
+        questions = {
+                "question": self.users_words[id_user][p][0],
+                "options": v,
+                "answer": self.users_words[id_user][p][1]
+            }
+
+        return questions
+
+    def log_question(self, question: dict):
+        print(question)

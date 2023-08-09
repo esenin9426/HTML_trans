@@ -1,8 +1,7 @@
 import os
 import logging
 
-import ParsSite
-from CreateQuestions import question as q, log_question
+from CreateQuestions import Interviewer
 from SaveChatID import set_chat_id, set_url
 import psycopg2
 
@@ -13,7 +12,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from ParsSite import Parser
-from Translate import Translator
 conn = psycopg2.connect(
     host="localhost",
     port="5432",
@@ -76,8 +74,8 @@ async def send_welcome(message: types.Message):
 async def process_question_command(message: types.Message):
     set_chat_id(message, conn=conn, cur=cur)
     # Выбираем случайный вопрос из списка
-    question = q()
-    log_question(question)
+    question = Interviewer().question(message)
+    Interviewer().log_question(question)
     # Создаем сообщение с вопросом и вариантами ответов
     text = f"{question['question']}"
     await message.answer(text)
@@ -125,7 +123,6 @@ def main():
     finally:
         cur.close()
         conn.close()
-        #os.system('docker stop ps_db')
 # Запускаем бота
 if __name__ == '__main__':
     main()

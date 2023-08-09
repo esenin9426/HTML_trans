@@ -1,3 +1,5 @@
+from time import sleep
+
 import psycopg2
 
 
@@ -19,7 +21,8 @@ class Translator:
         self.conn.close()
 
     def translate(self, world = '', sourse_language = 'en', target_language = 'ru'):
-        return self.GoogleTranslator(source= sourse_language , target=target_language).translate(world)
+        print(world[0])
+        return self.GoogleTranslator(source= sourse_language , target=target_language).translate(world[0])
 
     def translating(self):
         query = "select word from public.url_words where word not in (select word from words_trsl) limit 10"
@@ -27,12 +30,22 @@ class Translator:
         # Получение результатов запроса
         row = self.cur.fetchall()
         for i in row:
+            print('start translate')
             word = self.translate(world=i)
-            insert = "INSERT INTO public.url_words (word, trsl) VALUES (%s, %s)"
+            insert = "INSERT INTO public.words_trsl (word, trsl) VALUES (%s, %s)"
             values = (i, word)
             self.cur.execute(insert, values)
+            print('end translate', len(row))
         self.conn.commit()
 
-if __name__ == '__main__':
+def main():
+    print('start_t')
     t = Translator()
-    t.translating()
+    while True:
+        try:
+            t.translating()
+        except Exception as e:
+            print(e)
+
+if __name__ == '__main__':
+    main()

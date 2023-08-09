@@ -1,4 +1,5 @@
 import psycopg2
+from time import sleep
 
 class Parser:
     def __init__(self):
@@ -25,13 +26,20 @@ class Parser:
         response = self.requests.get(URL)
         soup = self.bs(response.content, "html.parser")
         words = []
+        prepositions = ['about', 'above', 'across', 'after', 'against', 'along', 'among', 'around', 'at', 'before',
+                        'behind', 'below', 'beneath', 'beside', 'between', 'beyond', 'but', 'by', 'concerning',
+                        'considering', 'despite', 'down', 'during', 'except', 'for', 'from', 'in', 'inside', 'into',
+                        'like', 'near', 'of', 'off', 'on', 'onto', 'out', 'outside', 'over', 'past', 'regarding',
+                        'round', 'since', 'through', 'throughout', 'till', 'to', 'toward', 'under', 'underneath',
+                        'until', 'up', 'upon', 'with', 'within', 'without']
         for text in soup.stripped_strings:
             for word in text.split():
                 if word.isalpha() and word.isascii():
                     words.append(word)
         english_words = set()
         for word in words:
-            if word.encode('ascii', 'ignore').decode('ascii') == word:
+            if word.encode('ascii', 'ignore').decode('ascii') == word \
+                    and word.encode('ascii', 'ignore').decode('ascii') not in prepositions:
                 english_words.add(word.lower())
 
         return list(english_words)[:2]
@@ -42,6 +50,7 @@ class Parser:
         # Получение результатов запроса
         row = self.cur.fetchall()
         for i in row:
+            print('start pars')
             word_list = self.pars_site(i[1])
             for j in word_list:
                 query = "INSERT INTO public.url_words (user_id, url, word) VALUES (%s, %s, %s)"
@@ -51,14 +60,16 @@ class Parser:
             self.cur.execute(query)
             # Сохранение изменений в базе данных
             self.conn.commit()
-            print(word_list)
+            print('end pars', i)
 
-if __name__ == '__main__':
+def main():
     p = Parser()
+    print('start_p')
     while True:
         try:
             p.parsing()
         except Exception as e:
             print(e)
 
-
+if __name__ == '__main__':
+    main()
