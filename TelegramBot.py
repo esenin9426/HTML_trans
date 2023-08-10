@@ -2,7 +2,7 @@ import os
 import logging
 
 from CreateQuestions import Interviewer
-from SaveChatID import set_chat_id, set_url
+from SaveChatID import set_chat_id, set_url,set_inspect_answer
 import psycopg2
 
 from aiogram import Bot, Dispatcher, types
@@ -92,8 +92,10 @@ async def process_answer(message: types.Message, state: FSMContext):
     question = data['question']
     # Проверяем ответ пользователя
     if message.text == question['answer']:
+        set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = True, conn=conn, cur=cur)
         await message.answer("Правильно!")
     else:
+        set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = False, conn=conn, cur=cur)
         await message.answer("Неправильно!")
     # Сбрасываем состояние пользователя
     await state.finish()
@@ -109,12 +111,7 @@ async def send_welcome(message: types.Message):
 @dp.message_handler(state='waiting_data')
 async def process_download(message: types.Message, state: FSMContext):
     p = Parser()
-#    t = Translator()
     set_url(message, conn=conn, cur=cur)
-    """data = message.text
-    for i in p.pars_site(URL=data):
-        print(t.translate(i))"""
-
     await state.finish()
 
 def main():

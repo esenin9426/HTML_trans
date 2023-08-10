@@ -10,6 +10,15 @@ def insert_date_user_info(data: dict, cur, conn):
     # Сохранение изменений в базе данных
     conn.commit()
 
+def insert_user_answer(id_user, answer, right, conn, cur): #доделать
+    # Запрос на вставку данных в таблицу
+    query = "INSERT INTO public.user_answer (user_id, answer, right_a) VALUES (%s, %s, %s)"
+    values = (id_user, answer, right)
+    #Выполнение запроса на вставку данных
+    cur.execute(query, values)
+    # Сохранение изменений в базе данных
+    conn.commit()
+
 def insert_url(data: dict, cur, conn):
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_url (date, user_id, url, parsed) VALUES (%s, %s, %s, %s)"
@@ -30,6 +39,14 @@ def set_chat_id(message: types.Message, conn, cur):
     insert_date_user_info(res,cur, conn )
     print(res)
 
+def set_inspect_answer(id_user, answer, right, conn, cur):#доделать
+    # Запрос на вставку данных в таблицу
+    query = "INSERT INTO public.user_answer (user_id, answer, right_a) VALUES (%s, %s, %s)"
+    values = (id_user, answer, right)
+    #Выполнение запроса на вставку данных
+    cur.execute(query, values)
+    # Сохранение изменений в базе данных
+    conn.commit()
 def set_url(message: types.Message, conn, cur):
     res = {'date': message.date.strftime('%Y-%m-%d %H:%M:%S'),
      'id': message.chat.id,
