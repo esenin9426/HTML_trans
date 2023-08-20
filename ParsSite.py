@@ -42,7 +42,7 @@ class Parser:
                     and word.encode('ascii', 'ignore').decode('ascii') not in prepositions:
                 english_words.add(word.lower())
 
-        return list(english_words)[:2]
+        return list(english_words)
 
     def parsing(self):
         query = "select user_id, url from public.user_url where parsed = false order by date"

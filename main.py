@@ -1,15 +1,24 @@
 import ParsSite
 import Translate
 import TelegramBot
-import threading
 
+import multiprocessing
+
+def Pars():
+    ParsSite.main()
+
+def Trans():
+    Translate.main()
+def TBot():
+    TelegramBot.main()
 
 if __name__ == '__main__':
-        t3 = threading.Thread(target=TelegramBot.main())
-        t1 = threading.Thread(target=Translate.main())
-        t2 = threading.Thread(target=ParsSite.main())
-        print('start')
-        t3.start()
-        t1.start()
-        t2.start()
 
+    p1 = multiprocessing.Process(target=Pars)
+    p2 = multiprocessing.Process(target=Trans)
+    p3 = multiprocessing.Process(target=TBot)
+
+
+    p1.start()
+    p2.start()
+    p3.start()
