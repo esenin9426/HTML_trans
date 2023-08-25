@@ -1,7 +1,7 @@
 import psycopg2
 from aiogram import types
 
-def insert_date_user_info(data: dict, cur, conn):
+async def insert_date_user_info(data: dict, cur, conn):
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_info (date, user_id, username, last_name, first_name, message) VALUES (%s, %s, %s, %s, %s, %s)"
     values = (data["date"], data["id"], data["username"], data["last_name"],data["first_name"], data["message"])
@@ -10,7 +10,7 @@ def insert_date_user_info(data: dict, cur, conn):
     # Сохранение изменений в базе данных
     conn.commit()
 
-def insert_user_answer(id_user, answer, right, conn, cur): #доделать
+async def insert_user_answer(id_user, answer, right, conn, cur): #доделать
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_answer (user_id, answer, right_a) VALUES (%s, %s, %s)"
     values = (id_user, answer, right)
@@ -19,7 +19,7 @@ def insert_user_answer(id_user, answer, right, conn, cur): #доделать
     # Сохранение изменений в базе данных
     conn.commit()
 
-def insert_url(data: dict, cur, conn):
+async def insert_url(data: dict, cur, conn):
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_url (date, user_id, url, parsed) VALUES (%s, %s, %s, %s)"
     print(query)
@@ -29,17 +29,26 @@ def insert_url(data: dict, cur, conn):
     # Сохранение изменений в базе данных
     conn.commit()
 
-def set_chat_id(message: types.Message, conn, cur):
+async def check_data(message: types.Message, conn, cur):
+    query = f"select  count(1) from public.user_url where user_id = {message.chat.id}"
+    cur.execute(query)
+    # Получение результатов запроса
+    cou = cur.fetchall()
+    if cou[0] == 0:
+        return True
+    return False
+
+async def set_chat_id(message: types.Message, conn, cur):
     res = {'date': message.date.strftime('%Y-%m-%d %H:%M:%S'),
      'id': message.chat.id,
      'username': message.chat.username,
      'last_name': message.chat.last_name,
      'first_name': message.chat.first_name,
      'message': message.text}
-    insert_date_user_info(res,cur, conn )
+    await insert_date_user_info(res,cur, conn )
     print(res)
 
-def set_inspect_answer(id_user, answer, right, conn, cur):#доделать
+async def set_inspect_answer(id_user, answer, right, conn, cur):#доделать
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_answer (user_id, answer, right_a) VALUES (%s, %s, %s)"
     values = (id_user, answer, right)
@@ -47,11 +56,11 @@ def set_inspect_answer(id_user, answer, right, conn, cur):#доделать
     cur.execute(query, values)
     # Сохранение изменений в базе данных
     conn.commit()
-def set_url(message: types.Message, conn, cur):
+async def set_url(message: types.Message, conn, cur):
     res = {'date': message.date.strftime('%Y-%m-%d %H:%M:%S'),
      'id': message.chat.id,
      'url': message.text}
-    insert_url(res,cur, conn )
+    await insert_url(res,cur, conn )
     print(res)
 
 if __name__ == '__main__':

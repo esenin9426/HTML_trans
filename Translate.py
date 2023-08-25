@@ -25,18 +25,22 @@ class Translator:
         return self.GoogleTranslator(source= sourse_language , target=target_language).translate(world[0])
 
     def translating(self):
-        query = "select word from public.url_words where word not in (select word from words_trsl) limit 10"
+        query = "select word from public.url_words where word not in (select word from words_trsl) limit 100"
         self.cur.execute(query)
         # Получение результатов запроса
         row = self.cur.fetchall()
+        if len(row) == 0:
+            return
+        print('start translate')
+        ins = []
         for i in row:
-            print('start translate')
             word = self.translate(world=i)
-            insert = "INSERT INTO public.words_trsl (word, trsl) VALUES (%s, %s)"
-            values = (i, word)
-            self.cur.execute(insert, values)
-            print('end translate', len(row))
+            ins.append((i, word))
+        insert = "INSERT INTO public.words_trsl (word, trsl) VALUES (%s, %s)"
+        self.cur.executemany(insert, ins)
         self.conn.commit()
+        print('end translate')
+
 
 def main():
     print('start_t')

@@ -2,7 +2,7 @@ import os
 import logging
 
 from CreateQuestions import Interviewer
-from SaveChatID import set_chat_id, set_url,set_inspect_answer
+from SaveChatID import set_chat_id, set_url,set_inspect_answer, check_data
 import psycopg2
 
 from aiogram import Bot, Dispatcher, types
@@ -62,8 +62,9 @@ dp = Dispatcher(bot, storage=storage)
 
 # Обработчик команды /start
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
-    set_chat_id(message, conn=conn, cur=cur)
+async def send_welcome(message: types.Message,state: FSMContext):
+    await state.finish()
+    await set_chat_id(message, conn=conn, cur=cur)
     await message.reply("Привет! Я бот, который может задавать тебе вопросы.")
     await bot.send_message(message.chat.id, "Выберите действия" ,reply_markup=markup(False))
     await message.delete()
@@ -72,7 +73,7 @@ async def send_welcome(message: types.Message):
 # Обработчик команды /question
 @dp.message_handler(commands=['question'])
 async def process_question_command(message: types.Message):
-    set_chat_id(message, conn=conn, cur=cur)
+    await set_chat_id(message, conn=conn, cur=cur)
     # Выбираем случайный вопрос из списка
     question = Interviewer().question(message)
     Interviewer().log_question(question)
@@ -86,32 +87,29 @@ async def process_question_command(message: types.Message):
 # Обработчик ответа на вопрос
 @dp.message_handler(state='waiting_for_answer')
 async def process_answer(message: types.Message, state: FSMContext):
-    set_chat_id(message, conn=conn, cur=cur)
+    await set_chat_id(message, conn=conn, cur=cur)
     # Получаем контекст пользователя
     data = await state.get_data()
     question = data['question']
     # Проверяем ответ пользователя
     if message.text == question['answer']:
-        set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = True, conn=conn, cur=cur)
+        await set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = True, conn=conn, cur=cur)
         await message.answer("Правильно!")
     else:
-        set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = False, conn=conn, cur=cur)
+        await set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = False, conn=conn, cur=cur)
         await message.answer("Неправильно!")
-    # Сбрасываем состояние пользователя
     await state.finish()
 
 @dp.message_handler(commands=['data'])
 async def send_welcome(message: types.Message):
-    set_chat_id(message, conn=conn, cur=cur)
+    await set_chat_id(message, conn=conn, cur=cur)
     await message.reply("Давайте загрузим текст, который нужно перевести(на данный момент я могу принимать только URL сайта, но скоро я стану лучше:))")
     await dp.current_state(chat=message.chat.id, user=message.from_user.id).set_state('waiting_data')
-
     await message.delete()
 
 @dp.message_handler(state='waiting_data')
 async def process_download(message: types.Message, state: FSMContext):
-    p = Parser()
-    set_url(message, conn=conn, cur=cur)
+    await set_url(message, conn=conn, cur=cur)
     await state.finish()
 
 def main():
