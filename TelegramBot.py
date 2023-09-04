@@ -97,7 +97,7 @@ async def process_answer(message: types.Message, state: FSMContext):
         await message.answer("Правильно!")
     else:
         await set_inspect_answer(id_user = message.chat.id,answer = question['answer'], right = False, conn=conn, cur=cur)
-        await message.answer("Неправильно!")
+        await message.answer(f"Неправильно,  верный ответ - {question['answer']}")
     await state.finish()
 
 @dp.message_handler(commands=['data'])
