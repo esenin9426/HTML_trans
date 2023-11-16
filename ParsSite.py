@@ -1,5 +1,4 @@
 import psycopg2
-from time import sleep
 
 class Parser:
     def __init__(self):
@@ -17,9 +16,16 @@ class Parser:
 
         # Создание курсора для работы с базой данных
         self.cur = self.conn.cursor()
+
+    def all_close(self):
+        self.cur.close()
+        self.conn.close()
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.cur.close()
         self.conn.close()
+
+
 
 
     def pars_site(self, URL):
@@ -51,7 +57,14 @@ class Parser:
         row = self.cur.fetchall()
         for i in row:
             print('start pars')
-            word_list = self.pars_site(i[1])
+            try:
+                word_list = self.pars_site(i[1])
+            except Exception as e:
+                print("we here")
+                query = f"delete from public.user_url where user_id = {i[0]} and url = '{i[1]}'"
+                self.cur.execute(query)
+                self.conn.commit()
+                print(e)
             for j in word_list:
                 query = "INSERT INTO public.url_words (user_id, url, word) VALUES (%s, %s, %s)"
                 values = (i[0], i[1], j)
@@ -63,13 +76,16 @@ class Parser:
             print('end pars', i)
 
 def main():
-    p = Parser()
-    print('start_p')
-    while True:
-        try:
-            p.parsing()
-        except Exception as e:
-            print(e)
+    try:
+        p = Parser()
+        print('start_p')
+        while True:
+            try:
+                p.parsing()
+            except Exception as e:
+                print(e)
+    finally:
+        p.all_close()
 
 if __name__ == '__main__':
     main()
