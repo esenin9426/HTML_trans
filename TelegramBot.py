@@ -1,9 +1,10 @@
 import os
 import logging
-
+import json
 from CreateQuestions import Interviewer
 from SaveChatID import set_chat_id, set_url,set_inspect_answer, check_data
 import psycopg2
+import redis
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
@@ -21,6 +22,7 @@ conn = psycopg2.connect(
 # Создание курсора для работы с базой данных
 cur = conn.cursor()
 
+r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 storage = MemoryStorage()
 
@@ -60,6 +62,13 @@ bot = Bot(token=TOKEN)
 # Создаем объект диспетчера
 dp = Dispatcher(bot, storage=storage)
 
+@dp.message_handler(commands=['help'])
+async def process_question_command(message: types.Message, state: FSMContext):
+    await set_chat_id(message, conn=conn, cur=cur)
+    text = "Брат/Сектра меня создаи для того чтобы я переводил тебе ссылки пендосовских сайтов, и потом мы с тобой учили слова, по этому если ты тут первый раз, найди сайт который тебе нужен, копируй ссылку, жми data отправь мне сайт, и дальше будет магия"
+    await message.answer(text)
+    await state.finish()
+
 # Обработчик команды /start
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message,state: FSMContext):
@@ -72,7 +81,7 @@ async def send_welcome(message: types.Message,state: FSMContext):
 
 # Обработчик команды /question
 @dp.message_handler(commands=['question'])
-async def process_question_command(message: types.Message):
+async def process_question_command(message: types.Message, state: FSMContext):
     await set_chat_id(message, conn=conn, cur=cur)
     # Выбираем случайный вопрос из списка
     question = Interviewer().question(message)
@@ -81,10 +90,12 @@ async def process_question_command(message: types.Message):
     text = f"{question['question']}"
     await message.answer(text)
     await bot.send_message(message.chat.id, "Введите Ваш ответ:", reply_markup=markup(question['options']))
-    await dp.current_state(chat=message.chat.id, user=message.from_user.id).set_state('waiting_for_answer')
-    await dp.current_state(chat=message.chat.id, user=message.from_user.id).update_data(question=question)
+    question['options'] = str(question['options'])
+    r.hset(message['from']['id'], mapping = question)
 
-# Обработчик ответа на вопрос
+    await state.finish()
+
+
 @dp.message_handler(state='waiting_for_answer')
 async def process_answer(message: types.Message, state: FSMContext):
     await set_chat_id(message, conn=conn, cur=cur)
@@ -100,17 +111,66 @@ async def process_answer(message: types.Message, state: FSMContext):
         await message.answer(f"Неправильно,  верный ответ - {question['answer']}")
     await state.finish()
 
+
+
 @dp.message_handler(commands=['data'])
 async def send_welcome(message: types.Message):
     await set_chat_id(message, conn=conn, cur=cur)
     await message.reply("Давайте загрузим текст, который нужно перевести(на данный момент я могу принимать только URL сайта, но скоро я стану лучше:))")
     await dp.current_state(chat=message.chat.id, user=message.from_user.id).set_state('waiting_data')
     await message.delete()
-
 @dp.message_handler(state='waiting_data')
 async def process_download(message: types.Message, state: FSMContext):
     await set_url(message, conn=conn, cur=cur)
     await state.finish()
+# Обработчик ответа на вопрос
+@dp.message_handler()
+async def echo(message: types.Message):
+    await set_chat_id(message, conn=conn, cur=cur)
+    print(message.text)
+    answer = r.hgetall(message.chat.id)
+
+    if message.text == answer['answer']:
+        await message.answer("Правильно")
+        await set_chat_id(message, conn=conn, cur=cur)
+        # Выбираем случайный вопрос из списка
+        question = Interviewer().question(message)
+        Interviewer().log_question(question)
+        # Создаем сообщение с вопросом и вариантами ответов
+        text = f"{question['question']}"
+        await message.answer(text)
+        await bot.send_message(message.chat.id, "Введите Ваш ответ:", reply_markup=markup(question['options']))
+        question['options'] = str(question['options'])
+        r.hset(message['from']['id'], mapping=question)
+        return
+    if message.text in answer['options']:
+        await message.answer(f"Неправильно,  верный ответ - {answer['answer']}")
+        await set_chat_id(message, conn=conn, cur=cur)
+        # Выбираем случайный вопрос из списка
+        question = Interviewer().question(message)
+        Interviewer().log_question(question)
+        # Создаем сообщение с вопросом и вариантами ответов
+        text = f"{question['question']}"
+        await message.answer(text)
+        await bot.send_message(message.chat.id, "Введите Ваш ответ:", reply_markup=markup(question['options']))
+        question['options'] = str(question['options'])
+        r.hset(message['from']['id'], mapping=question)
+        return
+    if message.content_type == "text":
+        # Обработка текстовых сообщений
+        await message.answer("""Брат/Сестра я хз чо ты напиcал/а. Этот дебил разработчик не научил меня обрабатывать это( мудак""")
+    else:
+        # Обработка других типов сообщений
+        await message.answer(f'Я не умею обрабатывать сообщения типа {message.content_type}')
+
+@dp.message_handler()
+async def echo(message: types.Message):
+    if message.content_type == "text":
+        # Обработка текстовых сообщений
+        await message.answer(f'Вы написали: {message.text}')
+    else:
+        # Обработка других типов сообщений
+        await message.answer(f'Я не умею обрабатывать сообщения типа {message.content_type}')
 
 def main():
     try:
