@@ -62,21 +62,19 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
 
 @dp.message_handler(commands=['help'])
-async def process_question_command(message: types.Message, state: FSMContext):
+async def process_question_command(message: types.Message):
     await set_chat_id(message, conn=conn, cur=cur)
-    text = "Брат/Сектра меня создаи для того чтобы я переводил тебе ссылки пендосовских сайтов, и потом мы с тобой учили слова, по этому если ты тут первый раз, найди сайт который тебе нужен, копируй ссылку, жми /data отправь мне сайт, и дальше будет магия" \
+    text = "Брат/Сеcтра меня создали для того чтобы я переводил тебе ссылки пендосовских сайтов, и потом мы с тобой учили слова, поэтому если ты тут первый раз, найди сайт который тебе нужен, копируй ссылку, жми /data отправь мне сайт, и дальше будет магия. " \
            "Если ты уже дедал это, то жми /question и наслаждайся"
     await message.answer(text)
-    await state.finish()
 
 # Обработчик команды /start
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message,state: FSMContext):
-    await state.finish()
+async def send_welcome(message: types.Message):
+    print(message)
     await set_chat_id(message, conn=conn, cur=cur)
     await message.reply("Привет! Я бот, который может задавать тебе вопросы, которые будут состоять из английских слов, из ссылок которые ты загрузишь нажав кнопку  /data")
     await bot.send_message(message.chat.id, "Выберите действия" ,reply_markup=markup(False))
-    await message.delete()
 
 async def do_question(message: types.Message):
     question = Interviewer().question(message)
