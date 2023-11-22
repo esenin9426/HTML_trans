@@ -45,6 +45,12 @@ class Interviewer:
                     		    """
         self.cur.execute(sql)
         row = self.cur.fetchall()
+
+        if len(row) == 0:
+            questions = {
+                "question": 0
+            }
+            return questions
         for i in row:
             i = list(i)
             self.users_words[i[0]] = self.users_words.get(i[0], []) + [[i[1], i[2]]]
