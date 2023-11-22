@@ -11,6 +11,17 @@ services:
     networks:
       - kiwikaf
 
+  redis_db:
+    container_name: 'redis_db'
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=root
+      - REDIS_USER=redis
+    image: redis:7.2.3-bookworm
+    networks:
+      - kiwikaf
+
 networks:
   kiwikaf:
     name: kiwikaf
