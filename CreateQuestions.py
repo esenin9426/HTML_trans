@@ -31,7 +31,19 @@ class Interviewer:
         		    """
 
         self.cur.execute(sql)
-
+        row = self.cur.fetchall()
+        if len(row) == 0:
+            sql = f"""SELECT distinct {id_user}, uw.word, wt.trsl 
+                            FROM public.url_words uw 
+                    		    inner join public.words_trsl wt on uw.word = wt.word
+                    		    where uw.user_id = 0
+                    		    and wt.trsl not in (select  answer from user_answer
+                                                                    where user_id = {id_user}
+                                                                    group by answer
+                                                                    having count(right_a) >= 5)
+                    		    order by uw.word desc
+                    		    """
+        self.cur.execute(sql)
         row = self.cur.fetchall()
         for i in row:
             i = list(i)
