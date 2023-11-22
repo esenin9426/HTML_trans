@@ -79,6 +79,10 @@ async def send_welcome(message: types.Message):
 async def do_question(message: types.Message):
     question = Interviewer().question(message)
     Interviewer().log_question(question)
+
+    if question['question'] == 0:
+        await bot.send_message(message.chat.id, "Брат/Сестра Все, слова закончились, жми /data и загружай новые", reply_markup=markup())
+
     # Создаем сообщение с вопросом и вариантами ответов
     text = f"{question['question']}"
     await message.answer(text)
