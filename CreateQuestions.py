@@ -40,7 +40,7 @@ class Interviewer:
                     		    and wt.trsl not in (select  answer from user_answer
                                                                     where user_id = {id_user}
                                                                     group by answer
-                                                                    having count(right_a) >= 5)
+                                                                    having count(right_a) >= 1)
                     		    order by uw.word desc
                     		    """
         self.cur.execute(sql)

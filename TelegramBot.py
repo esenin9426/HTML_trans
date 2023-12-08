@@ -98,7 +98,7 @@ async def process_question_command(message: types.Message, state: FSMContext):
 @dp.message_handler(commands=['data'])
 async def send_welcome(message: types.Message):
     await set_chat_id(message, conn=conn, cur=cur)
-    if check_data:
+    if check_data and message.chat.id != 406364751:
         await message.reply("По одному, предыдущие еще не выучены((")
         return
     await message.reply("Давайте загрузим текст, который нужно перевести(на данный момент я могу принимать только URL сайта, но скоро я стану лучше:))")
