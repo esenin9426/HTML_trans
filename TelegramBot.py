@@ -1,7 +1,7 @@
 import os
 import logging
 from CreateQuestions import Interviewer
-from SaveChatID import set_chat_id, set_url
+from SaveChatID import set_chat_id, set_url, check_data
 import psycopg2
 import redis
 
@@ -71,7 +71,6 @@ async def process_question_command(message: types.Message):
 # Обработчик команды /start
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    print(message)
     await set_chat_id(message, conn=conn, cur=cur)
     await message.reply("Привет! Я бот, который может задавать тебе вопросы, которые будут состоять из английских слов, из ссылок которые ты загрузишь нажав кнопку  /data")
     await bot.send_message(message.chat.id, "Выберите действия" ,reply_markup=markup(False))
@@ -79,10 +78,9 @@ async def send_welcome(message: types.Message):
 async def do_question(message: types.Message):
     question = Interviewer().question(message)
     Interviewer().log_question(question)
-
     if question['question'] == 0:
         await bot.send_message(message.chat.id, "Брат/Сестра Все, слова закончились, жми /data и загружай новые", reply_markup=markup())
-
+        return
     # Создаем сообщение с вопросом и вариантами ответов
     text = f"{question['question']}"
     await message.answer(text)
@@ -100,6 +98,9 @@ async def process_question_command(message: types.Message, state: FSMContext):
 @dp.message_handler(commands=['data'])
 async def send_welcome(message: types.Message):
     await set_chat_id(message, conn=conn, cur=cur)
+    if check_data and message.chat.id != 406364751:
+        await message.reply("По одному, предыдущие еще не выучены((")
+        return
     await message.reply("Давайте загрузим текст, который нужно перевести(на данный момент я могу принимать только URL сайта, но скоро я стану лучше:))")
     await dp.current_state(chat=message.chat.id, user=message.from_user.id).set_state('waiting_data')
     await message.delete()
@@ -112,8 +113,11 @@ async def process_download(message: types.Message, state: FSMContext):
 @dp.message_handler()
 async def echo(message: types.Message):
     await set_chat_id(message, conn=conn, cur=cur)
-    print(message.text)
+
     answer = r.hgetall(message.chat.id)
+    if answer['answer'] is None:
+        await message.answer("""Брат/Сестра я хз чо ты напиcал/а. Этот дебил разработчик не научил меня обрабатывать это( мудак""")
+        return
 
     if message.text == answer['answer']:
         await message.answer("Правильно")
