@@ -86,4 +86,5 @@ class Interviewer:
         return questions
 
     def log_question(self, question: dict):
-        print(question)
+        pass
+        #print(question)
