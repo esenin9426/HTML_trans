@@ -22,7 +22,7 @@ async def insert_user_answer(id_user, answer, right, conn, cur): #доделат
 async def insert_url(data: dict, cur, conn):
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_url (date, user_id, url, parsed) VALUES (%s, %s, %s, %s)"
-    print(query)
+    #print(query)
     values = (data["date"], data["id"], data["url"], False)
     #Выполнение запроса на вставку данных
     cur.execute(query, values)

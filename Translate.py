@@ -21,7 +21,7 @@ class Translator:
         self.conn.close()
 
     def translate(self, world = '', sourse_language = 'en', target_language = 'ru'):
-        print(world[0])
+        #print(world[0])
         return self.GoogleTranslator(source= sourse_language , target=target_language).translate(world[0])
 
     def translating(self):
@@ -49,7 +49,8 @@ def main():
         try:
             t.translating()
         except Exception as e:
-            print(e)
+            pass
+            #print(e)
 
 if __name__ == '__main__':
     main()
