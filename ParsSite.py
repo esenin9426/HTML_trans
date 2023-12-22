@@ -64,7 +64,7 @@ class Parser:
                 query = f"delete from public.user_url where user_id = {i[0]} and url = '{i[1]}'"
                 self.cur.execute(query)
                 self.conn.commit()
-                #print(e)
+                print(e)
             for j in word_list:
                 query = "INSERT INTO public.url_words (user_id, url, word) VALUES (%s, %s, %s)"
                 values = (i[0], i[1], j)
@@ -83,8 +83,7 @@ def main():
             try:
                 p.parsing()
             except Exception as e:
-                pass
-                #print(e)
+                print(e)
     finally:
         p.all_close()
 
