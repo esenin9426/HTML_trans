@@ -22,7 +22,7 @@ async def insert_user_answer(id_user, answer, right, conn, cur): #доделат
 async def insert_url(data: dict, cur, conn):
     # Запрос на вставку данных в таблицу
     query = "INSERT INTO public.user_url (date, user_id, url, parsed) VALUES (%s, %s, %s, %s)"
-    #print(query)
+    print(query)
     values = (data["date"], data["id"], data["url"], False)
     #Выполнение запроса на вставку данных
     cur.execute(query, values)
@@ -46,7 +46,7 @@ async def set_chat_id(message: types.Message, conn, cur):
      'first_name': message.chat.first_name,
      'message': message.text}
     await insert_date_user_info(res,cur, conn )
-    #print(res)
+    print(res)
 
 async def set_inspect_answer(id_user, answer, right, conn, cur):#доделать
     # Запрос на вставку данных в таблицу
@@ -61,7 +61,7 @@ async def set_url(message: types.Message, conn, cur):
      'id': message.chat.id,
      'url': message.text}
     await insert_url(res,cur, conn )
-    #print(res)
+    print(res)
 
 if __name__ == '__main__':
     conn = psycopg2.connect(
