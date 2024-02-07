@@ -24,6 +24,20 @@ services:
     networks:
       - kiwikaf
 
+
+  myapp:
+    image: tg-bot-trans
+    container_name: 'tg-bot-trans'
+    ports:
+      - "8000:8000"
+    build: .
+    depends_on:
+      - ps_db
+      - redis_db
+    networks:
+      - kiwikaf
+
+
 networks:
   kiwikaf:
     name: kiwikaf
